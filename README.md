@@ -30,23 +30,130 @@
   ### 存储顺序：【描述内存块】【索引内存块】【行索引内存块】【内容内存块】
   
     【描述内存块】=【描述块长度(int32 不可变长)】【列数(int)】【列1类型(int) 名字(string)】 【列2类型(int) 名字(string)】... 【索引(string) 长度(int)】【行索引块长度(int)】【总行数(int)】【内容块长度(int64)】
+    
     【索引内存块】=【主键(具体类型看索引 如:1001)】 【主键(1002)】 【主键(1003)】...... 
+    
     【行索引内存块】=【start end】【start end】【start end】...... 
+    
     【内容内存块】=【行1.......】【行2.......】【行3.....】....
- ### 数据类型
+ ### 数据存储方式
     1. 数值类型 int float bool 使用变长参数正整数保存，牺牲最高位，1代表下一个字节也是属于当前正整数。
     如：128 = 1000000 00000001 00000000  00000000
                0       128
     需要注意的问题负数，负数的保存使用了补码，也就是一个很大的Int32数，正整数。
     Int32补码：uint temp = value < 0 ? (uint)(~Math.Abs(value) + 1) : (uint)value;
     在Int32中会将第一位作为符号位
-    
     如 -1 = 1111 1111 1111 1111 1111 1111 1111 1111 在C#中读取四字节存放到int32中，取值是正确的-1.当时在lua中，number是8字节的long类型，这时候lua取出来的值就是错误的 4,294,967,295。
 
     2. float 暂时 *10000，存在误差值，float不应该存在数值表当中，应该以千分比或者万分比表示，由业务去解释。
+    
     3. fix使用字符串保存。为了不改变定点数。
+    
     4. 字符串string 使用utf8保存
       英文 1字节 0 - 127   
       中文 3字节 128以上   
-
+### 数据类型  
+       字符串 public const string String = "string";
+       整形 public const string Int = "int";
+       布尔 public const string Boolean = "bool";
+       列表:使用标准的Json格式配表 
+            public const string ListInt = "list<int>";
+            public const string ListString = "list<string>";
+            public const string ListBoolean = "list<bool>";
+            public const string ListIntInt = "list<list<int>>";
+            public const string ListStringString = "list<list<string>>";
+       字典：使用标准的Json格式配表     
+            public const string DicIntInt = "map<int,int>";
+            public const string DicIntString = "map<int,string>";
+            public const string DicStringInt = "map<string,int>";
+            public const string DicStringString = "map<string,string>";
+### 配表
+  ![image](https://github.com/SihaoLiang/TableFramework/blob/main/Icons/table1.png)  
+    第一行 中文描述
+    第二行 字段名称
+    第三行 客户端类型 可以不填，不填就不导出
+    第四行 服务端类型
   
+### 导表
+    导表配置：[BuildSetting.xml]{https://github.com/SihaoLiang/TableFramework/blob/main/TableFramework/TableFramework/bin/BuildSetting.xml}
+    
+      <?xml version="1.0" encoding="utf-8"?>
+        <TableBuildSetting xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+          <TableBinaryOutPutPath>../Build/Binary/</TableBinaryOutPutPath>//导出目录
+          <TableSourcePath>../../Tool/table/</TableSourcePath>//Excel目录
+          <TabBuildScriptPath>Assets\BinaryFramework\Gen\</TabBuildScriptPath>//生成文件
+        </TableBuildSetting>
+        
+      导表接口:'TableBuilder.BuildTable();'
+        
+  ### 读取查询
+  统一管理：可以自定管理方案
+  
+    TableBarrier table = BinaryManager.GetTableElement<int, TableBarrier>(10101);
+  
+  全表读取：适合频繁操作的数值表，需要遍历的表格
+  
+    Dictionary<int, TableBarrier> iTable = BinaryManager.ReadDictionary<int, TableBarrier>();
+
+  自行管理：适合按需加载卸载
+  
+    IBinaryTable<int, TableBarrier> iBinaryTable = BinaryManager.ReadTableDic<int, TableBarrier>();
+    iBinaryTable.Release();
+
+  ### 导出文件
+    using System.Collections.Generic;
+    using TableFramework;
+    
+    [Table("Barrier.bytes")]
+    public partial class TableBarrier : ITable 
+    {
+      [Tooltip("ID")]
+      public int Id;
+      [Tooltip("章节编号")]
+      public int chapterId;
+      [Tooltip("章节名称")]
+      public string sectionName;
+      [Tooltip("关卡名称")]
+      public string chapterName;
+      [Tooltip("对应等级")]
+      public int level;
+      [Tooltip("每天进入次数")]
+      public int limit;
+      [Tooltip("单次进入消耗体力")]
+      public int costPower;
+      [Tooltip("关卡类型")]
+      public int type;
+      [Tooltip("关卡类型（策划用）")]
+      public string typeDesc;
+      [Tooltip("推荐战力")]
+      public int fightForce;
+      [Tooltip("时间限制")]
+      public int time;
+      [Tooltip("怪物编号")]
+      public int monsters;
+      [Tooltip("通关奖励")]
+      public IReadOnlyList<IReadOnlyList<int>> reward;
+      [Tooltip("章节图(资源)")]
+      public string map;
+
+      public void Deserialize(Reader reader)
+      {
+        Id = reader.ReadInt();
+        chapterId = reader.ReadInt();
+        sectionName = reader.ReadString();
+        chapterName = reader.ReadString();
+        level = reader.ReadInt();
+        limit = reader.ReadInt();
+        costPower = reader.ReadInt();
+        type = reader.ReadInt();
+        typeDesc = reader.ReadString();
+        fightForce = reader.ReadInt();
+        time = reader.ReadInt();
+        monsters = reader.ReadInt();
+        reward = reader.ReadListIntInt();
+        map = reader.ReadString();
+      }
+
+    }
+
+
