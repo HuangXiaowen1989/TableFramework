@@ -75,7 +75,7 @@
     第四行 服务端类型
   
 ### 导表
-    导表配置：[BuildSetting.xml]{https://github.com/SihaoLiang/TableFramework/blob/main/TableFramework/TableFramework/bin/BuildSetting.xml}
+  导表配置：[BuildSetting.xml]{https://github.com/SihaoLiang/TableFramework/blob/main/TableFramework/TableFramework/bin/BuildSetting.xml}
     
       <?xml version="1.0" encoding="utf-8"?>
         <TableBuildSetting xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -84,7 +84,7 @@
           <TabBuildScriptPath>Assets\BinaryFramework\Gen\</TabBuildScriptPath>//生成文件
         </TableBuildSetting>
         
-      导表接口:'TableBuilder.BuildTable();'
+  导表接口:'TableBuilder.BuildTable();'
         
   ### 读取查询
   统一管理：可以自定管理方案
@@ -156,4 +156,4 @@
 
     }
 
-    交流或者联系 QQ 928441097
+  ### 交流或者联系 QQ 928441097
